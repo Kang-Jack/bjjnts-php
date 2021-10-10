@@ -48,7 +48,7 @@ class Service
 
     public function init()
     {
-
+        echo  'call init'  . "\n";
         $this->login($this->username, $this->password);
         if (!$this->getInfo()) {
             $this->login($this->username, $this->password);
@@ -237,6 +237,7 @@ class Service
 
         $data = $res->json(true);
         $this->log(json_encode($data, JSON_UNESCAPED_UNICODE));
+        //var_dump($data);
         if (!empty($data['status'])) {
             switch ($data['status']) {
                 case 401:
@@ -254,14 +255,14 @@ class Service
                     echo  'smart' . "\n";
                     echo  $this->username . "\n";
                     $this->smart($classId, $courseId, $unitId);
-                    //$data['code'] = 3001;
+                    $data['code'] = 4001;
                     break;
                 // 人脸识别
                 case 2003:
                     echo  'face' . "\n";
                     echo  $this->username . "\n";
                     $this->face($classId, $courseId, $unitId);
-                    //$data['code'] = 3001;
+                    $data['code'] = 4001;
                     break;
             }
         }
@@ -276,7 +277,7 @@ class Service
      * @param  [type] $unitId   [description]
      * @return [type]           [description]
      */
-    public function smart($classId, $courseId, $unitId, $code = 0)
+    public function smart($classId, $courseId, $unitId, $code = 1)
     {
         echo  'smart' . "\n";
         // 过验证需要重新实例化http
@@ -308,8 +309,9 @@ class Service
                 case 400:
                     echo  'smart code tring' . "\n";
                     $code = $code + 1;
+                    
                     echo  $code . "\n";
-                    sleep(2);
+                    // sleep(2);
                     $data = $this-> smart($classId, $courseId, $unitId,$code);
                    //var_dump($data);
                     break;
@@ -355,6 +357,7 @@ class Service
 
         return $data;
     }
+
     public function getTaskList()
     {
         echo  'getTaskList' . "\n";
@@ -399,14 +402,21 @@ class Service
                                                 // 获取章节详情
                                                //echo  '获取章节详情' . "\n";
                                                 $unitInfo = $this->getUnitInfo($classId, $courseId, $v['id']);
-                                                $list[]   = [
-                                                    'class_id'      => $classId,
-                                                    'course_id'     => $unitInfo['video']['course_id'],
-                                                    'unit_id'       => $unitInfo['video']['unit_id'],
-                                                    'video_id'      => $unitInfo['video']['id'],
-                                                    'time'          => $unitInfo['video']['time'],
-                                                    'progress_time' => $unitInfo['progress_time'],
-                                                ];
+                                                if (!empty($unitInfo['video'])){
+                                                    $list[]   = [
+                                                        'class_id'      => $classId,
+                                                        'course_id'     => $unitInfo['video']['course_id'],
+                                                        'unit_id'       => $unitInfo['video']['unit_id'],
+                                                        'video_id'      => $unitInfo['video']['id'],
+                                                        'time'          => $unitInfo['video']['time'],
+                                                        'progress_time' => $unitInfo['progress_time'],
+                                                    ];
+                                                }
+                                                else
+                                                {
+                                                    echo  'unitInfo' . "\n";
+                                                    var_dump($unitInfo);
+                                                }
                                             }
                                         }
 
@@ -416,58 +426,15 @@ class Service
                         }
                     }
                 }
-                //echo  'cacheName' . "\n";
-                //echo  $cacheName . "\n";
+                echo  'cacheName' . "\n";
+                echo  $cacheName . "\n";
                 Cache::set($cacheName, $list);
             }
         }
 
         return $list;
     }
-/*
-    public function getTaskList()
-    {
-        echo  'getTaskList' . "\n";
-        $cacheName = $this->username . '_List';
-        $list      = Cache::get($cacheName);
 
-        if (!$list) {
-            // 重置数组
-            $list = [];
-            // 获取课程
-            $courseList = $this->getCourseList();
-            if ($courseList) {
-                $courseIds = array_column($courseList, 'class_id', 'course_id');
-                // 循环课程
-                foreach ($courseIds as $courseId => $classId) {
-                    // 获取章节
-                    $unitList = $this->getUnitList($classId, $courseId);
-                    if ($unitList) {
-
-                        // 循环章节
-                        foreach ($unitList as $key => $value) {
-                            foreach ($value['units'] as $k => $v) {
-                                // 获取章节详情
-                                $unitInfo = $this->getUnitInfo($classId, $courseId, $v['id']);
-                                $list[]   = [
-                                    'class_id'      => $classId,
-                                    'course_id'     => $unitInfo['video']['course_id'],
-                                    'unit_id'       => $unitInfo['video']['unit_id'],
-                                    'video_id'      => $unitInfo['video']['id'],
-                                    'time'          => $unitInfo['video']['time'],
-                                    'progress_time' => $unitInfo['progress_time'],
-                                ];
-                            }
-                        }
-                    }
-                }
-                Cache::set($cacheName, $list);
-            }
-        }
-
-        return $list;
-    }
-*/
     public function setTaskList($taskList)
     {
         echo  'setTaskList' . "\n";
@@ -527,6 +494,7 @@ class Service
 
     public function getToken()
     {
+        //echo  'call getToken'  . "\n";
         $user = $this->getInfo();
         return $user['access_token'];
     }

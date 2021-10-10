@@ -5,8 +5,8 @@ use bjjnts\Service;
 // 多用户学习
 $userList = [
     ['username' => 'name1', 'password' => 'pass1'],
-    ['username' => '', 'password' => ''],
-    //['username' => '', 'password' => ''],
+    ['username' => 'name2', 'password' => 'pass2'],
+    //['username' => 'name3', 'password' => 'pass3'],
 ];
 
 // 循环实例化
@@ -50,9 +50,18 @@ function run($taskList, $service)
     }
 
     if ($taskList[0]['time'] == $taskList[0]['progress_time']) {
-        array_shift($taskList);
-        run($taskList, $service);
         echo  'run tasklist' . "\n";
+        echo  'taskList-time' . "\n";
+        echo  $taskList[0]['time'] . "\n";
+        echo  'taskList-progress_time' . "\n";
+        echo  $taskList[0]['progress_time']. "\n";
+        array_shift($taskList);
+        echo  'array_shift time' . "\n";
+        echo  $taskList[0]['time'] . "\n";
+        echo  'array_shift progress_time' . "\n";
+        echo  $taskList[0]['progress_time'] . "\n";
+        run($taskList, $service);
+        //echo  'run tasklist' . "\n";
     } else {
         $time = 60;
         if ($taskList[0]['progress_time'] == 0) {
@@ -89,6 +98,12 @@ function run($taskList, $service)
                 $service->setErrorCount();
             }
             echo  'studies progress_time Error' . "\n";
+        }
+
+        elseif (!empty($res['code']) && $res['code'] == 4001) {
+            // pass validation 重置学习列表
+            $service->clearTaskList();
+            echo  'pass validation reset tasklist' . "\n";
         }
         // 学习时间限制
         elseif (!empty($res['code']) && $res['code'] == 3003) {
