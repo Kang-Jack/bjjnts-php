@@ -298,7 +298,6 @@ class Service
             'Referer: https://www.bjjnts.cn/study/video?class_id=' . $classId . '&course_id=' . $courseId . '&unit_id=' . $unitId,
             'Accept-Language: zh-CN,zh;q=0.9',
         ])->post('https://apif.bjjnts.cn/supervises/smart-new', '{"code":"' . $code . '","course_id":"' . $courseId . '","unit_id":"' . $unitId . '"}', 'json');
-        //])->post('https://apif.bjjnts.cn/supervises/smart-new', '{"course_id":"' . $courseId . '","unit_id":"' . $unitId . '","class_id":"' . $classId . '"}', 'json');
    
         $data = $res->json(true);
         echo '{"code":"' . $code . '","course_id":"' . $courseId . '","unit_id":"' . $unitId . '"}'  . "\n";
@@ -309,7 +308,12 @@ class Service
                 case 400:
                     echo  'smart code tring' . "\n";
                     $code = $code + 1;
-                    
+                    if ($code>50)
+                    {
+                        $this-> getNewCode();
+                        $code = 1;
+                        sleep(2);
+                    }
                     echo  $code . "\n";
                     // sleep(2);
                     $data = $this-> smart($classId, $courseId, $unitId,$code);
@@ -322,6 +326,35 @@ class Service
         return $data;
     }
 
+    /**
+     * 获新验证码
+     */
+    public function getNewCode()
+    {
+        echo  'getNewCode' . "\n";
+        $res = $this->http->rawHeaders([
+            'Connection: keep-alive',
+            'sec-ch-ua: "Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+            //'sec-ch-ua: "Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"',
+            'Accept: application/json, text/plain, */*',
+            'Authorization: Bearer ' . $this->getToken(),
+            'X-Client-Type: pc',
+            'sec-ch-ua-mobile: ?0',
+            'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
+            'Content-Type: application/json',
+            'Origin: https://www.bjjnts.cn',
+            'Sec-Fetch-Site: same-site',
+            'Sec-Fetch-Mode: cors',
+            'Sec-Fetch-Dest: empty',
+            'Referer: https://www.bjjnts.cn/study/video?class_id=' . $classId . '&course_id=' . $courseId . '&unit_id=' . $unitId,
+            'Accept-Language: zh-CN,zh;q=0.9,en;q=0.8',
+        ])->get('https://apif.bjjnts.cn/supervises/code');
+
+        $data = $res->json(true);
+        return $data;
+    }
+
+    
     /**
      * 人脸识别
      * @param  [type] $classId  [description]
@@ -380,18 +413,20 @@ class Service
                         foreach ($unitList as $key => $value) {
                              // echo  '循环章节' . "\n";
                             if (!empty($value['units'])) {
-                                foreach ($value['units'] as $k => $v) {
-                                    // 获取章节详情
-                                    //echo  '获取章节详情' . "\n";
-                                    $unitInfo = $this->getUnitInfo($classId, $courseId, $v['id']);
-                                    $list[]   = [
-                                        'class_id'      => $classId,
-                                        'course_id'     => $unitInfo['video']['course_id'],
-                                        'unit_id'       => $unitInfo['video']['unit_id'],
-                                        'video_id'      => $unitInfo['video']['id'],
-                                        'time'          => $unitInfo['video']['time'],
-                                        'progress_time' => $unitInfo['progress_time'],
-                                    ];
+                                if(!empty($unitInfo['progress_time'])){
+                                    foreach ($value['units'] as $k => $v) {
+                                        // 获取章节详情
+                                        //echo  '获取章节详情' . "\n";
+                                        $unitInfo = $this->getUnitInfo($classId, $courseId, $v['id']);
+                                        $list[]   = [
+                                            'class_id'      => $classId,
+                                            'course_id'     => $unitInfo['video']['course_id'],
+                                            'unit_id'       => $unitInfo['video']['unit_id'],
+                                            'video_id'      => $unitInfo['video']['id'],
+                                            'time'          => $unitInfo['video']['time'],
+                                            'progress_time' => $unitInfo['progress_time'],
+                                        ];
+                                    }
                                 }
                             }
                             else{
