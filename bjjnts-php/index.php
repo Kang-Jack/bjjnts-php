@@ -83,7 +83,6 @@ function run($taskList, $service)
             $taskList[0]['progress_time'] += $time ?: 1;
             $service->setTaskList($taskList);
             echo  'studies progress_time ok' . "\n";
-            echo  'studies progress_time ok' . "\n";
             echo  '{"class_id":"' . $taskList[0]['class_id'] . '","course_id":"' . $taskList[0]['course_id'] . '","unit_id":"'. $taskList[0]['course_id'] . '}' . "\n";
             echo  '{"video_id":"' . $taskList[0]['video_id'] . '}' . "\n";
             echo  'studies progress_time (seconds)' . "\n";
